@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from repeat_timer import RepeatedTimer
+from copy import deepcopy
 import sys
 import random
 
@@ -9,6 +10,7 @@ import random
 class MyWord(object):
     def __init__(self):
         self.word_list = list()
+        self.word_list_tmp = list()
 
     def set_word_list(self, file_path):
         with open(file_path, 'r') as file:
@@ -21,7 +23,15 @@ class MyWord(object):
         if not len(self.word_list):
             return ''
         else:
-            return random.choice(self.word_list)
+            if not self.word_list_tmp:
+                self.word_list_tmp = deepcopy(self.word_list)
+                print('Created new word list')
+            word = random.choice(self.word_list_tmp)
+            self.word_list_tmp.remove(word)
+            return word
+
+    def get_number_loaded(self):
+        return len(self.word_list) - len(self.word_list_tmp)
 
 
 class MyApp(QWidget):
@@ -46,12 +56,18 @@ class MyApp(QWidget):
         self.btn_print_word = QPushButton()
         self.btn_print_word.setText('Print')
 
+        self.pb_loaded_word = QProgressBar(self)
+        self.pb_loaded_word.setValue(0)
+        self.pb_loaded_word.setMaximum(100)
+
         layout = QGridLayout(self)
         param = [self.lbl_print_word, 0, 0, 1, 2]
         layout.addWidget(*param)
         param = [self.btn_import_word, 1, 0]
         layout.addWidget(*param)
         param = [self.btn_print_word, 1, 1]
+        layout.addWidget(*param)
+        param = [self.pb_loaded_word, 2, 0, 1, 2]
         layout.addWidget(*param)
 
         self.setLayout(layout)
@@ -62,18 +78,20 @@ class MyApp(QWidget):
         self.start_timer()
 
     def start_timer(self):
-        self.my_repeat_timer = RepeatedTimer(5, self.print_word, {})
+        self.my_repeat_timer = RepeatedTimer(1, self.print_word, {})
         self.my_repeat_timer.start()
 
     @pyqtSlot()
     def import_word_list(self):
         file_info = QFileDialog.getOpenFileName()
         self.my_word.set_word_list(file_info[0])
+        self.pb_loaded_word.setMaximum(len(self.my_word.word_list))
 
     @pyqtSlot(dict)
     def print_word(self, result):
         word = self.my_word.get_random_word()
         self.lbl_print_word.setText(word)
+        self.pb_loaded_word.setValue(self.my_word.get_number_loaded())
 
     def close_app(self):
         self.my_repeat_timer and self.my_repeat_timer.stop()
