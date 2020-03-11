@@ -3,8 +3,12 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from repeat_timer import RepeatedTimer
 from copy import deepcopy
+import os
 import sys
 import random
+import ctypes
+myappid = 'mycompany.myproduct.subproduct.version' # arbitrary string
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 
 class MyWord(object):
@@ -22,13 +26,12 @@ class MyWord(object):
     def get_random_word(self):
         if not len(self.word_list):
             return ''
-        else:
-            if not self.word_list_tmp:
-                self.word_list_tmp = deepcopy(self.word_list)
-                print('Created new word list')
-            word = random.choice(self.word_list_tmp)
-            self.word_list_tmp.remove(word)
-            return word
+
+        if not self.word_list_tmp:
+            self.word_list_tmp = deepcopy(self.word_list)
+        word = random.choice(self.word_list_tmp)
+        self.word_list_tmp.remove(word)
+        return word
 
     def get_number_loaded(self):
         return len(self.word_list) - len(self.word_list_tmp)
@@ -63,15 +66,14 @@ class MyApp(QWidget):
         layout = QGridLayout(self)
         param = [self.lbl_print_word, 0, 0, 1, 2]
         layout.addWidget(*param)
-        param = [self.btn_import_word, 1, 0]
+        param = [self.btn_import_word, 1, 0, 1, 2]
         layout.addWidget(*param)
-        param = [self.btn_print_word, 1, 1]
-        layout.addWidget(*param)
+        # param = [self.btn_print_word, 1, 1]
+        # layout.addWidget(*param)
         param = [self.pb_loaded_word, 2, 0, 1, 2]
         layout.addWidget(*param)
 
         self.setLayout(layout)
-        self.setWindowIcon(QIcon('./logo.ico'))
 
         self.my_word = MyWord()
         self.my_repeat_timer = None
@@ -80,6 +82,8 @@ class MyApp(QWidget):
     @pyqtSlot()
     def import_word_list(self):
         file_info = QFileDialog.getOpenFileName()
+        if not file_info[0]:
+            return
         self.my_word.set_word_list(file_info[0])
         self.pb_loaded_word.setMaximum(len(self.my_word.word_list))
 
@@ -105,7 +109,7 @@ if __name__ == '__main__':
     # Create object
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
-
+    app.setWindowIcon(QIcon(os.getcwd() + '/logo.ico'))
     # Now use a palette to switch to dark colors:
     palette = QPalette()
     palette.setColor(QPalette.Window, QColor(53, 53, 53))
