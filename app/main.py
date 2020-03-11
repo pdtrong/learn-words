@@ -75,8 +75,11 @@ class MyApp(QWidget):
     @pyqtSlot(dict)
     def update_printing_word(self, ignore_input):
         word = self.my_word.get_random_word()
-        self.lbl_print_word.setText(word)
-        self.pb_loaded_word.setValue(self.my_word.get_number_loaded())
+        if not word:
+            self.lbl_print_word.setText('Import word list')
+        else:
+            self.lbl_print_word.setText(word)
+            self.pb_loaded_word.setValue(self.my_word.get_number_loaded())
 
     def close_app(self):
         self.my_repeat_timer and self.my_repeat_timer.stop()
