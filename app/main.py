@@ -15,11 +15,10 @@ class MyApp(QWidget):
 
     def __init__(self):
         super().__init__()
-
+        # ------------------------------------------------------------
         self.trigger_update_word.connect(self.update_printing_word)
 
-        self.setWindowTitle('Words')
-
+        # ------------------------------------------------------------
         self.lbl_print_word = QLabel()
         self.lbl_print_word.setText('Hello World!!!')
         self.lbl_print_word.setFont(QFont('Arial', 24, QFont.Bold))
@@ -36,6 +35,7 @@ class MyApp(QWidget):
         self.pb_loaded_word.setValue(0)
         self.pb_loaded_word.setMaximum(100)
 
+        # ------------------------------------------------------------
         layout = QGridLayout(self)
         param = [self.lbl_print_word, 0, 0, 1, 2]
         layout.addWidget(*param)
@@ -46,12 +46,16 @@ class MyApp(QWidget):
         param = [self.pb_loaded_word, 2, 0, 1, 2]
         layout.addWidget(*param)
 
+        # ------------------------------------------------------------
         self.setLayout(layout)
+        self.setWindowTitle('Words')
 
+        # ------------------------------------------------------------
         self.my_word = MyWord()
         self.my_repeat_timer = None
         self.start_timer()
 
+    # ------------------------------------------------------------
     @pyqtSlot()
     def import_word_list(self):
         file_info = QFileDialog.getOpenFileName()
@@ -64,6 +68,7 @@ class MyApp(QWidget):
         self.my_repeat_timer = RepeatedTimer(1, self.fire_trigger_update_word)
         self.my_repeat_timer.start()
 
+    # ------------------------------------------------------------
     def fire_trigger_update_word(self):
         self.trigger_update_word.emit({})
 
@@ -79,15 +84,18 @@ class MyApp(QWidget):
 
 
 if __name__ == '__main__':
+    # ------------------------------------------------------------
     # Add app id
     my_app_id = 'Words-Learn-Application'
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(my_app_id)
 
+    # ------------------------------------------------------------
     # Create object
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
     app.setWindowIcon(QIcon(os.getcwd() + '/logo.ico'))
 
+    # ------------------------------------------------------------
     # Now use a palette to switch to dark colors:
     palette = QPalette()
     palette.setColor(QPalette.Window, QColor(53, 53, 53))
@@ -105,9 +113,11 @@ if __name__ == '__main__':
     palette.setColor(QPalette.HighlightedText, Qt.black)
     app.setPalette(palette)
 
+    # ------------------------------------------------------------
     my_app = MyApp()
     my_app.show()
 
+    # ------------------------------------------------------------
     # Handle event quit
     app.aboutToQuit.connect(my_app.close_app)
     sys.exit(app.exec_())
