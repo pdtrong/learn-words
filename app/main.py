@@ -40,7 +40,7 @@ class MyApp(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.trigger_update_word.connect(self.print_word)
+        self.trigger_update_word.connect(self.update_printing_word)
 
         self.setWindowTitle('Words')
 
@@ -77,18 +77,21 @@ class MyApp(QWidget):
         self.my_repeat_timer = None
         self.start_timer()
 
-    def start_timer(self):
-        self.my_repeat_timer = RepeatedTimer(1, self.print_word, {})
-        self.my_repeat_timer.start()
-
     @pyqtSlot()
     def import_word_list(self):
         file_info = QFileDialog.getOpenFileName()
         self.my_word.set_word_list(file_info[0])
         self.pb_loaded_word.setMaximum(len(self.my_word.word_list))
 
+    def start_timer(self):
+        self.my_repeat_timer = RepeatedTimer(1, self.fire_trigger_update_word)
+        self.my_repeat_timer.start()
+
+    def fire_trigger_update_word(self):
+        self.trigger_update_word.emit({})
+
     @pyqtSlot(dict)
-    def print_word(self, result):
+    def update_printing_word(self, ignore_input):
         word = self.my_word.get_random_word()
         self.lbl_print_word.setText(word)
         self.pb_loaded_word.setValue(self.my_word.get_number_loaded())
