@@ -1,43 +1,16 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-from repeat_timer import RepeatedTimer
-from copy import deepcopy
+from util.repeat_timer import RepeatedTimer
+from controllers.word_handle import MyWord
 import os
 import sys
-import random
 import ctypes
-myappid = 'mycompany.myproduct.subproduct.version' # arbitrary string
-ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
-
-
-class MyWord(object):
-    def __init__(self):
-        self.word_list = list()
-        self.word_list_tmp = list()
-
-    def set_word_list(self, file_path):
-        with open(file_path, 'r') as file:
-            self.word_list = file.readlines()
-
-        self.word_list = [x.replace('\n', '').replace('\r', '').strip()
-                          for x in self.word_list]
-
-    def get_random_word(self):
-        if not len(self.word_list):
-            return ''
-
-        if not self.word_list_tmp:
-            self.word_list_tmp = deepcopy(self.word_list)
-        word = random.choice(self.word_list_tmp)
-        self.word_list_tmp.remove(word)
-        return word
-
-    def get_number_loaded(self):
-        return len(self.word_list) - len(self.word_list_tmp)
 
 
 class MyApp(QWidget):
+
+    # Setup Signal
     trigger_update_word = pyqtSignal(dict)
 
     def __init__(self):
@@ -106,10 +79,15 @@ class MyApp(QWidget):
 
 
 if __name__ == '__main__':
+    # Add app id
+    my_app_id = 'Words-Learn-Application'
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(my_app_id)
+
     # Create object
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
     app.setWindowIcon(QIcon(os.getcwd() + '/logo.ico'))
+
     # Now use a palette to switch to dark colors:
     palette = QPalette()
     palette.setColor(QPalette.Window, QColor(53, 53, 53))
