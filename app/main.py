@@ -8,13 +8,49 @@ import sys
 import ctypes
 
 
+class MainWindow(QMainWindow):
+    trigger_update_stay_on_top = pyqtSignal(dict)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.trigger_update_stay_on_top.connect(self.update_stay_op_top)
+
+        self.wg_my_app = MyApp(parent=self)
+        self.setCentralWidget(self.wg_my_app)
+
+        self.menu_bar = self.menuBar()
+        option = self.menu_bar.addMenu('Option')
+
+        qa_stay_on_top = QAction('Stay on top', self, checkable=True)
+        qa_stay_on_top.setChecked(True)
+        qa_stay_on_top.triggered.connect(self.stay_on_top_toggle)
+
+        option.addAction(qa_stay_on_top)
+
+    def stay_on_top_toggle(self, state):
+        self.trigger_update_stay_on_top.emit({'state': state})
+
+    @pyqtSlot(dict)
+    def update_stay_op_top(self, result):
+        if result['state']:
+            self.setWindowFlags(Qt.WindowStaysOnTopHint)
+        else:
+            self.setWindowFlags(Qt.Window)
+        self.show()
+
+    def close_app(self):
+        self.wg_my_app.my_repeat_timer and self.wg_my_app.my_repeat_timer.stop()
+        print('closed app')
+
+
 class MyApp(QWidget):
 
     # Setup Signal
     trigger_update_word = pyqtSignal(dict)
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent)
         # ------------------------------------------------------------
         self.trigger_update_word.connect(self.update_printing_word)
 
@@ -81,10 +117,6 @@ class MyApp(QWidget):
             self.lbl_print_word.setText(word)
             self.pb_loaded_word.setValue(self.my_word.get_number_loaded())
 
-    def close_app(self):
-        self.my_repeat_timer and self.my_repeat_timer.stop()
-        print('closed app')
-
 
 if __name__ == '__main__':
     # ------------------------------------------------------------
@@ -117,7 +149,7 @@ if __name__ == '__main__':
     app.setPalette(palette)
 
     # ------------------------------------------------------------
-    my_app = MyApp()
+    my_app = MainWindow()
     my_app.show()
 
     # ------------------------------------------------------------
