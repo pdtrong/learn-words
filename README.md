@@ -1,3 +1,3 @@
 # Learn Words
-# # Introduction
+## Introduction
 - Application support learning new words
