@@ -8,40 +8,97 @@ import sys
 import ctypes
 
 
+DEFAULT_STR = '¯\_(ツ)_/¯'
+
+
 class MainWindow(QMainWindow):
+
     trigger_update_stay_on_top = pyqtSignal(dict)
+    trigger_update_word_list = pyqtSignal(dict)
+    trigger_print_about = pyqtSignal(dict)
+    trigger_setup_timer = pyqtSignal(dict)
 
     def __init__(self, parent=None):
-        super().__init__(parent)
+        super().__init__(parent, Qt.WindowFlags())
+        self.setWindowTitle('Learn words')
 
-        self.trigger_update_stay_on_top.connect(self.update_stay_op_top)
-
+        # ------------------------------------------------------------
         self.wg_my_app = MyApp(parent=self)
         self.setCentralWidget(self.wg_my_app)
 
+        height, width = 200, 400
+        center_point = QDesktopWidget().availableGeometry().center()
+        self.setGeometry(int(center_point.x() - width / 2), center_point.y(), width, height)
+
+        # ------------------------------------------------------------
+        self.trigger_update_stay_on_top.connect(self.update_stay_op_top_event)
+        self.trigger_update_word_list.connect(self.wg_my_app.import_word_list_event)
+        self.trigger_print_about.connect(self.print_about_event)
+        self.trigger_setup_timer.connect(self.setup_timer_event)
+
+        # ------------------------------------------------------------
         self.menu_bar = self.menuBar()
-        option = self.menu_bar.addMenu('Option')
+        mb_file = self.menu_bar.addMenu('File')
+        qa_import_word_list = QAction('Import', self)
+        qa_import_word_list.triggered.connect(self.import_word_list_toggle)
+        mb_file.addAction(qa_import_word_list)
 
+        mb_edit = self.menu_bar.addMenu('Edit')
+        qa_setup_timer = QAction('Adjust timer', self)
+        qa_setup_timer.triggered.connect(self.setup_timer_toggle)
+        mb_edit.addAction(qa_setup_timer)
+
+        mb_view = self.menu_bar.addMenu('View')
         qa_stay_on_top = QAction('Stay on top', self, checkable=True)
-        qa_stay_on_top.setChecked(True)
+        qa_stay_on_top.setChecked(False)
         qa_stay_on_top.triggered.connect(self.stay_on_top_toggle)
+        mb_view.addAction(qa_stay_on_top)
 
-        option.addAction(qa_stay_on_top)
+        mb_help = self.menu_bar.addMenu('Help')
+        qa_print_about = QAction('About', self)
+        qa_print_about.triggered.connect(self.print_about_toggle)
+        mb_help.addAction(qa_print_about)
+
+    def import_word_list_toggle(self):
+        self.trigger_update_word_list.emit({})
 
     def stay_on_top_toggle(self, state):
         self.trigger_update_stay_on_top.emit({'state': state})
 
     @pyqtSlot(dict)
-    def update_stay_op_top(self, result):
+    def update_stay_op_top_event(self, result):
         if result['state']:
             self.setWindowFlags(Qt.WindowStaysOnTopHint)
         else:
             self.setWindowFlags(Qt.Window)
         self.show()
 
+    def setup_timer_toggle(self):
+        self.trigger_setup_timer.emit({})
+
+    @pyqtSlot(dict)
+    def setup_timer_event(self):
+        parameter = [self, 'Input Dialog', 'Enter timer:']
+        timer_value, done = QInputDialog.getText(*parameter)
+        if done:
+            self.wg_my_app.delay = int(timer_value)
+            self.wg_my_app.start_timer()
+
+    def print_about_toggle(self):
+        self.trigger_print_about.emit({})
+
+    @pyqtSlot(dict)
+    def print_about_event(self):
+        about_me = '''
+        Author  : Duc Trong Pham
+        Contact : pdtrong.dev@gmail.com
+        '''
+        parameter = [self, 'About', about_me]
+        QMessageBox.about(*parameter)
+
     def close_app(self):
         self.wg_my_app.my_repeat_timer and self.wg_my_app.my_repeat_timer.stop()
-        print('closed app')
+        print('Closed app. Good bye.')
 
 
 class MyApp(QWidget):
@@ -50,19 +107,18 @@ class MyApp(QWidget):
     trigger_update_word = pyqtSignal(dict)
 
     def __init__(self, parent=None):
-        super().__init__(parent)
+        super().__init__(parent, Qt.WindowFlags())
+
+        self.delay = 3
+
         # ------------------------------------------------------------
         self.trigger_update_word.connect(self.update_printing_word)
 
         # ------------------------------------------------------------
         self.lbl_print_word = QLabel()
-        self.lbl_print_word.setText('Hello World!!!')
+        self.lbl_print_word.setText(DEFAULT_STR)
         self.lbl_print_word.setFont(QFont('Arial', 24, QFont.Bold))
         self.lbl_print_word.setAlignment(Qt.AlignCenter)
-
-        self.btn_import_word = QPushButton()
-        self.btn_import_word.setText('Import')
-        self.btn_import_word.clicked.connect(self.import_word_list)
 
         self.btn_print_word = QPushButton()
         self.btn_print_word.setText('Print')
@@ -75,11 +131,7 @@ class MyApp(QWidget):
         layout = QGridLayout(self)
         param = [self.lbl_print_word, 0, 0, 1, 2]
         layout.addWidget(*param)
-        param = [self.btn_import_word, 1, 0, 1, 2]
-        layout.addWidget(*param)
-        # param = [self.btn_print_word, 1, 1]
-        # layout.addWidget(*param)
-        param = [self.pb_loaded_word, 2, 0, 1, 2]
+        param = [self.pb_loaded_word, 1, 0, 1, 2]
         layout.addWidget(*param)
 
         # ------------------------------------------------------------
@@ -89,20 +141,29 @@ class MyApp(QWidget):
         # ------------------------------------------------------------
         self.my_word = MyWord()
         self.my_repeat_timer = None
-        self.start_timer()
 
     # ------------------------------------------------------------
     @pyqtSlot()
-    def import_word_list(self):
+    def import_word_list_event(self):
         file_info = QFileDialog.getOpenFileName()
         if not file_info[0]:
-            return
+            return None
+
         self.my_word.set_word_list(file_info[0])
         self.pb_loaded_word.setMaximum(len(self.my_word.word_list))
 
+        self.start_timer()
+
     def start_timer(self):
-        self.my_repeat_timer = RepeatedTimer(1, self.fire_trigger_update_word)
+        if not self.my_word.word_list:
+            return None
+        self.my_repeat_timer and self.my_repeat_timer.stop()
+        self.my_repeat_timer = RepeatedTimer(self.delay, self.fire_trigger_update_word)
         self.my_repeat_timer.start()
+
+    def stop_timer(self):
+        self.my_repeat_timer and self.my_repeat_timer.stop()
+        self.my_repeat_timer = None
 
     # ------------------------------------------------------------
     def fire_trigger_update_word(self):
@@ -112,7 +173,7 @@ class MyApp(QWidget):
     def update_printing_word(self, ignore_input):
         word = self.my_word.get_random_word()
         if not word:
-            self.lbl_print_word.setText('Import word list')
+            self.lbl_print_word.setText(DEFAULT_STR)
         else:
             self.lbl_print_word.setText(word)
             self.pb_loaded_word.setValue(self.my_word.get_number_loaded())
@@ -144,7 +205,7 @@ if __name__ == '__main__':
     palette.setColor(QPalette.ButtonText, Qt.white)
     palette.setColor(QPalette.BrightText, Qt.red)
     palette.setColor(QPalette.Link, QColor(42, 130, 218))
-    palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
+    palette.setColor(QPalette.Highlight, Qt.green)
     palette.setColor(QPalette.HighlightedText, Qt.black)
     app.setPalette(palette)
 
