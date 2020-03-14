@@ -121,9 +121,6 @@ class MyApp(QWidget):
         self.lbl_print_word.setFont(QFont('Arial', 24, QFont.Bold))
         self.lbl_print_word.setAlignment(Qt.AlignCenter)
 
-        self.btn_print_word = QPushButton()
-        self.btn_print_word.setText('Print')
-
         self.pb_loaded_word = QProgressBar(self)
         self.pb_loaded_word.setValue(0)
         self.pb_loaded_word.setMaximum(100)
@@ -148,7 +145,7 @@ class MyApp(QWidget):
     def import_word_list_event(self):
         parameter = [self]
         file_info = QFileDialog.getOpenFileName(*parameter)
-        if not file_info[0]:
+        if not file_info or not file_info[0]:
             return None
 
         self.my_word.set_word_list(file_info[0])
