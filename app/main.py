@@ -44,32 +44,34 @@ class MainWindow(QMainWindow):
 
         # ------------------------------------------------------------
         self.menu_bar = self.menuBar()
+
+        # File
         mb_file = self.menu_bar.addMenu('File')
         qa_import_word_list = QAction('Import words', self)
-        qa_import_word_list.triggered.connect(self.import_word_list_toggle)
+        qa_import_word_list.triggered.connect(lambda ign: self.trigger_update_word_list.emit({}))
         mb_file.addAction(qa_import_word_list)
 
+        # Edit
         mb_edit = self.menu_bar.addMenu('Edit')
+
+        # # Adjust timer
         qa_setup_timer = QAction('Adjust timer', self)
-        qa_setup_timer.triggered.connect(self.setup_timer_toggle)
+        qa_setup_timer.triggered.connect(lambda ign: self.trigger_setup_timer.emit({}))
+
         mb_edit.addAction(qa_setup_timer)
 
+        # Window
         mb_window = self.menu_bar.addMenu('Window')
         qa_stay_on_top = QAction('Stay on top', self, checkable=True)
         qa_stay_on_top.setChecked(False)
-        qa_stay_on_top.triggered.connect(self.stay_on_top_toggle)
+        qa_stay_on_top.triggered.connect(lambda state: self.trigger_update_stay_on_top.emit({'state': state}))
         mb_window.addAction(qa_stay_on_top)
 
+        # Help
         mb_help = self.menu_bar.addMenu('Help')
         qa_print_about = QAction('About', self)
-        qa_print_about.triggered.connect(self.print_about_toggle)
+        qa_print_about.triggered.connect(lambda ign: self.trigger_print_about.emit({}))
         mb_help.addAction(qa_print_about)
-
-    def import_word_list_toggle(self):
-        self.trigger_update_word_list.emit({})
-
-    def stay_on_top_toggle(self, state):
-        self.trigger_update_stay_on_top.emit({'state': state})
 
     @pyqtSlot(dict)
     def update_stay_op_top_event(self, result):
@@ -79,9 +81,6 @@ class MainWindow(QMainWindow):
             self.setWindowFlags(Qt.Window)
         self.show()
 
-    def setup_timer_toggle(self):
-        self.trigger_setup_timer.emit({})
-
     @pyqtSlot(dict)
     def setup_timer_event(self):
         parameter = [self, 'Input Dialog', 'Enter timer (current = {}):'.format(self.wg_my_app.delay),
@@ -90,9 +89,6 @@ class MainWindow(QMainWindow):
         if done and timer_value:
             self.wg_my_app.delay = int(timer_value)
             self.wg_my_app.my_word.word_list and self.wg_my_app.start_timer()
-
-    def print_about_toggle(self):
-        self.trigger_print_about.emit({})
 
     @pyqtSlot(dict)
     def print_about_event(self):
