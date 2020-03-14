@@ -180,10 +180,12 @@ class MyApp(QWidget):
             self.lbl_print_word.setText(word)
             self.pb_loaded_word.setValue(self.my_word.get_number_loaded())
 
+
 def get_root_folder():
     root_main_path = os.path.abspath(sys.modules['__main__'].__file__)
     root_folder = os.path.dirname(root_main_path)
     return root_folder
+
 
 if __name__ == '__main__':
     # ------------------------------------------------------------

@@ -13,6 +13,10 @@ class MyWord(object):
 
         self.word_list = [x.replace('\n', '').replace('\r', '').strip()
                           for x in self.word_list]
+        self.reset_word_list()
+
+    def reset_word_list(self):
+        self.word_list_tmp = deepcopy(self.word_list)
 
     def get_random_word(self):
         if not len(self.word_list):
@@ -20,6 +24,7 @@ class MyWord(object):
 
         if not self.word_list_tmp:
             self.word_list_tmp = deepcopy(self.word_list)
+
         word = random.choice(self.word_list_tmp)
         self.word_list_tmp.remove(word)
         return word
