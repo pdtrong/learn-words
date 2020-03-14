@@ -7,12 +7,10 @@ import os
 import sys
 import ctypes
 
-
 DEFAULT_STR = '¯\_(ツ)_/¯'
 
 
 class MainWindow(QMainWindow):
-
     trigger_update_stay_on_top = pyqtSignal(dict)
     trigger_update_word_list = pyqtSignal(dict)
     trigger_print_about = pyqtSignal(dict)
@@ -103,7 +101,6 @@ class MainWindow(QMainWindow):
 
 
 class MyApp(QWidget):
-
     # Setup Signal
     trigger_update_word = pyqtSignal(dict)
 
@@ -169,7 +166,7 @@ class MyApp(QWidget):
         self.trigger_update_word.emit({})
 
     @pyqtSlot(dict)
-    def update_printing_word(self, ignore_input):
+    def update_printing_word(self):
         word = self.my_word.get_random_word()
         if not word:
             self.lbl_print_word.setText(DEFAULT_STR)
@@ -177,6 +174,10 @@ class MyApp(QWidget):
             self.lbl_print_word.setText(word)
             self.pb_loaded_word.setValue(self.my_word.get_number_loaded())
 
+def get_root_folder():
+    root_main_path = os.path.abspath(sys.modules['__main__'].__file__)
+    root_folder = os.path.dirname(root_main_path)
+    return root_folder
 
 if __name__ == '__main__':
     # ------------------------------------------------------------
@@ -186,9 +187,10 @@ if __name__ == '__main__':
 
     # ------------------------------------------------------------
     # Create object
+    path_icon = get_root_folder() + '/logo.png'
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
-    app.setWindowIcon(QIcon(os.getcwd() + '/logo.png'))
+    app.setWindowIcon(QIcon(path_icon))
 
     # ------------------------------------------------------------
     # Now use a palette to switch to dark colors:

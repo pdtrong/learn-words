@@ -1,2 +1,2 @@
 python ./app/main.py
-pause
+exit
