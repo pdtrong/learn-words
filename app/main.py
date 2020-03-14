@@ -28,7 +28,7 @@ class MainWindow(QMainWindow):
 
         height, width = 200, 400
         center_point = QDesktopWidget().availableGeometry().center()
-        self.setGeometry(int(center_point.x() - width / 2), center_point.y(), width, height)
+        self.setGeometry(int(center_point.x() - width / 2), int(center_point.y() - height / 2), width, height)
 
         # ------------------------------------------------------------
         self.trigger_update_stay_on_top.connect(self.update_stay_op_top_event)
@@ -48,11 +48,11 @@ class MainWindow(QMainWindow):
         qa_setup_timer.triggered.connect(self.setup_timer_toggle)
         mb_edit.addAction(qa_setup_timer)
 
-        mb_view = self.menu_bar.addMenu('View')
+        mb_window = self.menu_bar.addMenu('Window')
         qa_stay_on_top = QAction('Stay on top', self, checkable=True)
         qa_stay_on_top.setChecked(False)
         qa_stay_on_top.triggered.connect(self.stay_on_top_toggle)
-        mb_view.addAction(qa_stay_on_top)
+        mb_window.addAction(qa_stay_on_top)
 
         mb_help = self.menu_bar.addMenu('Help')
         qa_print_about = QAction('About', self)
@@ -90,8 +90,8 @@ class MainWindow(QMainWindow):
     @pyqtSlot(dict)
     def print_about_event(self):
         about_me = '''
-        Author  : Duc Trong Pham
-        Contact : pdtrong.dev@gmail.com
+        Duc Trong Pham
+        pdtrong.dev@gmail.com
         '''
         parameter = [self, 'About', about_me]
         QMessageBox.about(*parameter)
@@ -189,7 +189,7 @@ if __name__ == '__main__':
     # Create object
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
-    app.setWindowIcon(QIcon(os.getcwd() + '/logo.ico'))
+    app.setWindowIcon(QIcon(os.getcwd() + '/logo.png'))
 
     # ------------------------------------------------------------
     # Now use a palette to switch to dark colors:
@@ -205,7 +205,7 @@ if __name__ == '__main__':
     palette.setColor(QPalette.ButtonText, Qt.white)
     palette.setColor(QPalette.BrightText, Qt.red)
     palette.setColor(QPalette.Link, QColor(42, 130, 218))
-    palette.setColor(QPalette.Highlight, Qt.green)
+    palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
     palette.setColor(QPalette.HighlightedText, Qt.black)
     app.setPalette(palette)
 
