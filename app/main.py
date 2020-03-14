@@ -231,7 +231,7 @@ if __name__ == '__main__':
 
     # ------------------------------------------------------------
     # Create object
-    path_icon = get_root_folder() + '/logo.ico'
+    path_icon = get_root_folder() + '/store/logo.ico'
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
     app.setWindowIcon(QIcon(path_icon))
