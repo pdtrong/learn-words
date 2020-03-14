@@ -39,7 +39,7 @@ class MainWindow(QMainWindow):
         # ------------------------------------------------------------
         self.menu_bar = self.menuBar()
         mb_file = self.menu_bar.addMenu('File')
-        qa_import_word_list = QAction('Import', self)
+        qa_import_word_list = QAction('Import words', self)
         qa_import_word_list.triggered.connect(self.import_word_list_toggle)
         mb_file.addAction(qa_import_word_list)
 
@@ -78,9 +78,10 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(dict)
     def setup_timer_event(self):
-        parameter = [self, 'Input Dialog', 'Enter timer:']
-        timer_value, done = QInputDialog.getText(*parameter)
-        if done:
+        parameter = [self, 'Input Dialog', 'Enter timer (current = {}):'.format(self.wg_my_app.delay),
+                     5, 1, 100, 1, Qt.WindowFlags()]
+        timer_value, done = QInputDialog.getInt(*parameter)
+        if done and timer_value:
             self.wg_my_app.delay = int(timer_value)
             self.wg_my_app.start_timer()
 
@@ -145,7 +146,8 @@ class MyApp(QWidget):
     # ------------------------------------------------------------
     @pyqtSlot()
     def import_word_list_event(self):
-        file_info = QFileDialog.getOpenFileName()
+        parameter = [self]
+        file_info = QFileDialog.getOpenFileName(*parameter)
         if not file_info[0]:
             return None
 
