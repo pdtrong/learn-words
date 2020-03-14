@@ -11,9 +11,9 @@ import ctypes
 
 
 if hasattr(sys, '_MEIPASS'):
-    logging.info('running in a PyInstaller bundle')
+    logging.info('Running in a PyInstaller bundle')
 else:
-    logging.info('running in a normal Python process')
+    logging.info('Running in a Python process')
 
 DEFAULT_STR = '¯\_(ツ)_/¯'
 
