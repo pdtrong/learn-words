@@ -3,15 +3,17 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from util.repeat_timer import RepeatedTimer
 from controllers.word_handle import MyWord
+from util.logging_custom import logging
+
 import os
 import sys
 import ctypes
 
 
 if hasattr(sys, '_MEIPASS'):
-    print('running in a PyInstaller bundle')
+    logging.info('running in a PyInstaller bundle')
 else:
-    print('running in a normal Python process')
+    logging.info('running in a normal Python process')
 
 DEFAULT_STR = '¯\_(ツ)_/¯'
 
@@ -87,7 +89,7 @@ class MainWindow(QMainWindow):
         timer_value, done = QInputDialog.getInt(*parameter)
         if done and timer_value:
             self.wg_my_app.delay = int(timer_value)
-            self.wg_my_app.start_timer()
+            self.wg_my_app.my_word.word_list and self.wg_my_app.start_timer()
 
     def print_about_toggle(self):
         self.trigger_print_about.emit({})
@@ -103,7 +105,7 @@ class MainWindow(QMainWindow):
 
     def close_app(self):
         self.wg_my_app.my_repeat_timer and self.wg_my_app.my_repeat_timer.stop()
-        print('Closed app. Good bye.')
+        logging.info('Closed app ╮（╯＿╰）╭')
 
 
 class MyApp(QWidget):
@@ -154,11 +156,9 @@ class MyApp(QWidget):
         self.my_word.set_word_list(file_info[0])
         self.pb_loaded_word.setMaximum(len(self.my_word.word_list))
 
-        self.start_timer()
+        self.my_word.word_list and self.start_timer()
 
     def start_timer(self):
-        if not self.my_word.word_list:
-            return None
         self.my_repeat_timer and self.my_repeat_timer.stop()
         self.my_repeat_timer = RepeatedTimer(self.delay, self.fire_trigger_update_word)
         self.my_repeat_timer.start()
