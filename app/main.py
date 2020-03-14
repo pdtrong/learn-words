@@ -74,18 +74,20 @@ class MainWindow(QMainWindow):
         mn_choice_word = QMenu('Choice', self)
 
         # # # Random
-        qa_choice_random = QAction('Random', self, checkable=True)
+        qa_choice_random_name = 'Random'
+        qa_choice_random = QAction(qa_choice_random_name, self, checkable=True)
         qa_choice_random.setChecked(True)
-        qa_choice_random.triggered.connect(lambda ign: self.trigger_choice_random.emit({'name': 'Random'}))
+        qa_choice_random.triggered.connect(lambda ign: self.trigger_choice_random.emit({'name': qa_choice_random_name}))
         mn_choice_word.addAction(qa_choice_random)
-        self.submenu_choice['Random'] = qa_choice_random
+        self.submenu_choice[qa_choice_random_name] = qa_choice_random
 
         # # # Order
-        qa_choice_order = QAction('Order', self, checkable=True)
+        qa_choice_order_name = 'Order'
+        qa_choice_order = QAction(qa_choice_order_name, self, checkable=True)
         qa_choice_order.setChecked(False)
-        qa_choice_order.triggered.connect(lambda ign: self.trigger_choice_order.emit({'name': 'Order'}))
+        qa_choice_order.triggered.connect(lambda ign: self.trigger_choice_order.emit({'name': qa_choice_order_name}))
         mn_choice_word.addAction(qa_choice_order)
-        self.submenu_choice['Order'] = qa_choice_order
+        self.submenu_choice[qa_choice_order_name] = qa_choice_order
 
         mb_edit.addAction(qa_setup_timer)
         mb_edit.addMenu(mn_choice_word)
