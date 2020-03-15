@@ -152,8 +152,9 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(dict)
     def current_section_event(self):
-        current_section_info = '{} word(s)\n{} loaded\n{}(s) delay\n{} mode'
-        current_section_info = current_section_info.format(self.wg_my_app.my_word.get_len_words(),
+        current_section_info = '{}\n{} word(s)\n{} loaded\n{}(s) delay\n{} mode'
+        current_section_info = current_section_info.format(self.wg_my_app.current_file,
+                                                           self.wg_my_app.my_word.get_len_words(),
                                                            self.wg_my_app.my_word.get_number_loaded(),
                                                            self.wg_my_app.delay,
                                                            self.wg_my_app.my_word.get_choice_mode())
@@ -173,6 +174,7 @@ class MyApp(QWidget):
         super().__init__(parent, Qt.WindowFlags())
 
         self.delay = 3
+        self.current_file = 'Unknown'
 
         # ------------------------------------------------------------
         self.trigger_update_word.connect(self.update_printing_word)
@@ -209,15 +211,16 @@ class MyApp(QWidget):
         file_info = QFileDialog.getOpenFileName(*parameter)
         if not file_info or not file_info[0]:
             return None
-
-        self.my_word.set_word_list(file_info[0])
+        file_path = file_info[0]
+        self.current_file = os.path.basename(file_path)
+        self.my_word.set_word_list(file_path)
         self.pb_loaded_word.setMaximum(self.my_word.get_len_words())
 
         self.my_word.get_len_words() and self.start_timer()
 
     def start_timer(self):
         self.my_repeat_timer and self.my_repeat_timer.stop()
-        self.my_repeat_timer = RepeatedTimer(self.delay, self.fire_trigger_update_word)
+        self.my_repeat_timer = RepeatedTimer(self.delay, self.trigger_update_word.emit, {})
         self.my_repeat_timer.start()
 
     def stop_timer(self):
@@ -225,9 +228,6 @@ class MyApp(QWidget):
         self.my_repeat_timer = None
 
     # ------------------------------------------------------------
-    def fire_trigger_update_word(self):
-        self.trigger_update_word.emit({})
-
     @pyqtSlot(dict)
     def update_printing_word(self):
         word = self.my_word.get_word()
