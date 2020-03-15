@@ -4,7 +4,7 @@ from PyQt5.QtCore import *
 from util.repeat_timer import RepeatedTimer
 from controllers.word_handle import MyWord
 from util.logging_custom import logging
-
+from common.constant import ChoiceMode
 import os
 import sys
 import ctypes
@@ -74,7 +74,7 @@ class MainWindow(QMainWindow):
         mn_choice_word = QMenu('Choice', self)
 
         # # # Random
-        qa_choice_random_name = 'Random'
+        qa_choice_random_name = ChoiceMode.RANDOM
         qa_choice_random = QAction(qa_choice_random_name, self, checkable=True)
         qa_choice_random.setChecked(True)
         qa_choice_random.triggered.connect(lambda ign: self.trigger_choice_random.emit({'name': qa_choice_random_name}))
@@ -82,7 +82,7 @@ class MainWindow(QMainWindow):
         self.submenu_choice[qa_choice_random_name] = qa_choice_random
 
         # # # Order
-        qa_choice_order_name = 'Order'
+        qa_choice_order_name = ChoiceMode.ORDER
         qa_choice_order = QAction(qa_choice_order_name, self, checkable=True)
         qa_choice_order.setChecked(False)
         qa_choice_order.triggered.connect(lambda ign: self.trigger_choice_order.emit({'name': qa_choice_order_name}))
@@ -126,7 +126,7 @@ class MainWindow(QMainWindow):
         timer_value, done = QInputDialog.getInt(*parameter)
         if done and timer_value:
             self.wg_my_app.delay = int(timer_value)
-            self.wg_my_app.my_word.word_list and self.wg_my_app.start_timer()
+            self.wg_my_app.my_word.len_word_list() and self.wg_my_app.start_timer()
 
     @pyqtSlot(dict)
     def print_about_event(self):
@@ -140,6 +140,7 @@ class MainWindow(QMainWindow):
     @pyqtSlot(dict)
     def choice_word_event(self, result):
         [self.submenu_choice[x].setChecked(result['name'] == x) for x in self.submenu_choice.keys()]
+        self.wg_my_app.my_word.set_choice_mode(result['name'])
 
     def close_app(self):
         self.wg_my_app.my_repeat_timer and self.wg_my_app.my_repeat_timer.stop()
@@ -192,9 +193,9 @@ class MyApp(QWidget):
             return None
 
         self.my_word.set_word_list(file_info[0])
-        self.pb_loaded_word.setMaximum(len(self.my_word.word_list))
+        self.pb_loaded_word.setMaximum(self.my_word.len_word_list())
 
-        self.my_word.word_list and self.start_timer()
+        self.my_word.len_word_list() and self.start_timer()
 
     def start_timer(self):
         self.my_repeat_timer and self.my_repeat_timer.stop()
@@ -211,7 +212,7 @@ class MyApp(QWidget):
 
     @pyqtSlot(dict)
     def update_printing_word(self):
-        word = self.my_word.get_random_word()
+        word = self.my_word.get_word()
         if not word:
             self.lbl_print_word.setText(DEFAULT_STR)
         else:
