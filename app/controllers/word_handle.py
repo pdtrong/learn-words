@@ -16,6 +16,7 @@ class MyWord(object):
             self.word_list = file.readlines()
         self.word_list = [x.replace('\n', '').replace('\r', '').strip()
                           for x in self.word_list]
+        self.word_list = [x for x in self.word_list if x]
         self.reset_word_list()
 
     def reset_word_list(self):
