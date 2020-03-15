@@ -9,7 +9,6 @@ import os
 import sys
 import ctypes
 
-
 if hasattr(sys, '_MEIPASS'):
     logging.info('Running in a PyInstaller bundle')
 else:
@@ -19,12 +18,13 @@ DEFAULT_STR = '¯\_(ツ)_/¯'
 
 
 class MainWindow(QMainWindow):
-    trigger_update_stay_on_top = pyqtSignal(dict)
-    trigger_update_word_list = pyqtSignal(dict)
-    trigger_print_about = pyqtSignal(dict)
-    trigger_setup_timer = pyqtSignal(dict)
+    trigger_window_stay_on_top = pyqtSignal(dict)
+    trigger_file_import_words = pyqtSignal(dict)
+    trigger_help_about = pyqtSignal(dict)
+    trigger_edit_adjust_timer = pyqtSignal(dict)
     trigger_choice_random = pyqtSignal(dict)
     trigger_choice_order = pyqtSignal(dict)
+    trigger_view_current_section = pyqtSignal(dict)
 
     def __init__(self, parent=None):
         super().__init__(parent, Qt.WindowFlags())
@@ -43,12 +43,13 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('Learn words')
 
         # ------------------------------------------------------------
-        self.trigger_update_stay_on_top.connect(self.update_stay_op_top_event)
-        self.trigger_update_word_list.connect(self.wg_my_app.import_word_list_event)
-        self.trigger_print_about.connect(self.print_about_event)
-        self.trigger_setup_timer.connect(self.setup_timer_event)
+        self.trigger_window_stay_on_top.connect(self.stay_op_top_event)
+        self.trigger_file_import_words.connect(self.wg_my_app.import_words_event)
+        self.trigger_help_about.connect(self.about_event)
+        self.trigger_edit_adjust_timer.connect(self.adjust_timer_event)
         self.trigger_choice_random.connect(self.choice_word_event)
         self.trigger_choice_order.connect(self.choice_word_event)
+        self.trigger_view_current_section.connect(self.current_section_event)
 
         # ------------------------------------------------------------
         self.menu_bar = self.menuBar()
@@ -59,7 +60,7 @@ class MainWindow(QMainWindow):
 
         # # Import words
         qa_import_word_list = QAction('Import words', self)
-        qa_import_word_list.triggered.connect(lambda ign: self.trigger_update_word_list.emit({}))
+        qa_import_word_list.triggered.connect(lambda ign: self.trigger_file_import_words.emit({}))
         mb_file.addAction(qa_import_word_list)
 
         # ------------------------------------------------------------
@@ -68,7 +69,7 @@ class MainWindow(QMainWindow):
 
         # # Adjust timer
         qa_setup_timer = QAction('Adjust timer', self)
-        qa_setup_timer.triggered.connect(lambda ign: self.trigger_setup_timer.emit({}))
+        qa_setup_timer.triggered.connect(lambda ign: self.trigger_edit_adjust_timer.emit({}))
 
         # # Choice
         mn_choice_word = QMenu('Choice', self)
@@ -93,13 +94,20 @@ class MainWindow(QMainWindow):
         mb_edit.addMenu(mn_choice_word)
 
         # ------------------------------------------------------------
+        # View
+        mb_view = self.menu_bar.addMenu('View')
+        qa_current_section = QAction('Current section', self)
+        qa_current_section.triggered.connect(lambda ign: self.trigger_view_current_section.emit({}))
+        mb_view.addAction(qa_current_section)
+
+        # ------------------------------------------------------------
         # Window
         mb_window = self.menu_bar.addMenu('Window')
 
         # # Stay on top
         qa_stay_on_top = QAction('Stay on top', self, checkable=True)
         qa_stay_on_top.setChecked(False)
-        qa_stay_on_top.triggered.connect(lambda state: self.trigger_update_stay_on_top.emit({'state': state}))
+        qa_stay_on_top.triggered.connect(lambda state: self.trigger_window_stay_on_top.emit({'state': state}))
         mb_window.addAction(qa_stay_on_top)
 
         # ------------------------------------------------------------
@@ -108,11 +116,11 @@ class MainWindow(QMainWindow):
 
         # # About
         qa_print_about = QAction('About', self)
-        qa_print_about.triggered.connect(lambda ign: self.trigger_print_about.emit({}))
+        qa_print_about.triggered.connect(lambda ign: self.trigger_help_about.emit({}))
         mb_help.addAction(qa_print_about)
 
     @pyqtSlot(dict)
-    def update_stay_op_top_event(self, result):
+    def stay_op_top_event(self, result):
         if result['state']:
             self.setWindowFlags(Qt.WindowStaysOnTopHint)
         else:
@@ -120,16 +128,16 @@ class MainWindow(QMainWindow):
         self.show()
 
     @pyqtSlot(dict)
-    def setup_timer_event(self):
+    def adjust_timer_event(self):
         parameter = [self, 'Input Dialog', 'Enter timer (current = {}):'.format(self.wg_my_app.delay),
                      5, 1, 100, 1, Qt.WindowFlags()]
         timer_value, done = QInputDialog.getInt(*parameter)
         if done and timer_value:
             self.wg_my_app.delay = int(timer_value)
-            self.wg_my_app.my_word.len_word_list() and self.wg_my_app.start_timer()
+            self.wg_my_app.my_word.get_len_words() and self.wg_my_app.start_timer()
 
     @pyqtSlot(dict)
-    def print_about_event(self):
+    def about_event(self):
         about_me = '''
         Duc Trong Pham
         pdtrong.dev@gmail.com
@@ -141,6 +149,16 @@ class MainWindow(QMainWindow):
     def choice_word_event(self, result):
         [self.submenu_choice[x].setChecked(result['name'] == x) for x in self.submenu_choice.keys()]
         self.wg_my_app.my_word.set_choice_mode(result['name'])
+
+    @pyqtSlot(dict)
+    def current_section_event(self):
+        current_section_info = '{} word(s)\n{} loaded\n{}(s) delay\n{} mode'
+        current_section_info = current_section_info.format(self.wg_my_app.my_word.get_len_words(),
+                                                           self.wg_my_app.my_word.get_number_loaded(),
+                                                           self.wg_my_app.delay,
+                                                           self.wg_my_app.my_word.get_choice_mode())
+        parameter = [self, 'Current section', current_section_info]
+        QMessageBox.about(*parameter)
 
     def close_app(self):
         self.wg_my_app.my_repeat_timer and self.wg_my_app.my_repeat_timer.stop()
@@ -186,16 +204,16 @@ class MyApp(QWidget):
 
     # ------------------------------------------------------------
     @pyqtSlot()
-    def import_word_list_event(self):
+    def import_words_event(self):
         parameter = [self]
         file_info = QFileDialog.getOpenFileName(*parameter)
         if not file_info or not file_info[0]:
             return None
 
         self.my_word.set_word_list(file_info[0])
-        self.pb_loaded_word.setMaximum(self.my_word.len_word_list())
+        self.pb_loaded_word.setMaximum(self.my_word.get_len_words())
 
-        self.my_word.len_word_list() and self.start_timer()
+        self.my_word.get_len_words() and self.start_timer()
 
     def start_timer(self):
         self.my_repeat_timer and self.my_repeat_timer.stop()

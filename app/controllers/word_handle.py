@@ -28,6 +28,9 @@ class MyWord(object):
         self.choice_mode = mode
         self.reset_word_list()
 
+    def get_choice_mode(self):
+        return self.choice_mode
+
     def get_word(self):
         word = ''
         if not len(self.word_list):
@@ -50,5 +53,5 @@ class MyWord(object):
             number_loaded = self.current_index
         return number_loaded
 
-    def len_word_list(self):
+    def get_len_words(self):
         return len(self.word_list)
