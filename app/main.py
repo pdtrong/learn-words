@@ -5,9 +5,11 @@ from util.repeat_timer import RepeatedTimer
 from controllers.word_handle import MyWord
 from util.logging_custom import logging
 from common.constant import ChoiceMode
+from common.stylesheet import StyleSheetProgressBar
 import os
 import sys
 import ctypes
+
 
 if hasattr(sys, '_MEIPASS'):
     logging.info('Running in a PyInstaller bundle')
@@ -15,6 +17,23 @@ else:
     logging.info('Running in a Python process')
 
 DEFAULT_STR = '¯\_(ツ)_/¯'
+
+
+class WindowFlagsObject(object):
+    def __init__(self):
+        self.flags = set()
+
+    def enable_flag(self, flag):
+        self.flags.add(flag)
+
+    def remove_flag(self, flag):
+        self.flags.remove(flag)
+
+    def get_flags(self):
+        flags_value = Qt.Window
+        for i in self.flags:
+            flags_value |= i
+        return flags_value
 
 
 class MainWindow(QMainWindow):
@@ -25,17 +44,19 @@ class MainWindow(QMainWindow):
     trigger_choice_random = pyqtSignal(dict)
     trigger_choice_order = pyqtSignal(dict)
     trigger_view_current_section = pyqtSignal(dict)
+    trigger_view_hide = pyqtSignal(dict)
 
     def __init__(self, parent=None):
         super().__init__(parent, Qt.WindowFlags())
 
         # ------------------------------------------------------------
         self.submenu_choice = dict()
+        self.window_flags_object = WindowFlagsObject()
 
         # ------------------------------------------------------------
         self.wg_my_app = MyApp(parent=self)
 
-        height, width = 200, 400
+        height, width = 60, 250
         center_point = QDesktopWidget().availableGeometry().center()
 
         self.setGeometry(int(center_point.x() - width / 2), int(center_point.y() - height / 2), width, height)
@@ -50,6 +71,7 @@ class MainWindow(QMainWindow):
         self.trigger_choice_random.connect(self.choice_word_event)
         self.trigger_choice_order.connect(self.choice_word_event)
         self.trigger_view_current_section.connect(self.current_section_event)
+        self.trigger_view_hide.connect(self.view_hide_event)
 
         # ------------------------------------------------------------
         self.menu_bar = self.menuBar()
@@ -98,7 +120,11 @@ class MainWindow(QMainWindow):
         mb_view = self.menu_bar.addMenu('View')
         qa_current_section = QAction('Current section', self)
         qa_current_section.triggered.connect(lambda ign: self.trigger_view_current_section.emit({}))
+        qa_hide = QAction('Hide', self, checkable=True)
+        qa_hide.setChecked(False)
+        qa_hide.triggered.connect(lambda state: self.trigger_view_hide.emit({'state': state}))
         mb_view.addAction(qa_current_section)
+        mb_view.addAction(qa_hide)
 
         # ------------------------------------------------------------
         # Window
@@ -122,15 +148,16 @@ class MainWindow(QMainWindow):
     @pyqtSlot(dict)
     def stay_op_top_event(self, result):
         if result['state']:
-            self.setWindowFlags(Qt.WindowStaysOnTopHint)
+            self.window_flags_object.enable_flag(Qt.WindowStaysOnTopHint)
         else:
-            self.setWindowFlags(Qt.Window)
+            self.window_flags_object.remove_flag(Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(self.window_flags_object.get_flags())
         self.show()
 
     @pyqtSlot(dict)
     def adjust_timer_event(self):
         parameter = [self, 'Input Dialog', 'Enter timer (current = {}):'.format(self.wg_my_app.delay),
-                     5, 1, 100, 1, Qt.WindowFlags()]
+                     3, 1, 100, 1, Qt.WindowFlags()]
         timer_value, done = QInputDialog.getInt(*parameter)
         if done and timer_value:
             self.wg_my_app.delay = int(timer_value)
@@ -161,6 +188,36 @@ class MainWindow(QMainWindow):
         parameter = [self, 'Current section', current_section_info]
         QMessageBox.about(*parameter)
 
+    @pyqtSlot(dict)
+    def view_hide_event(self, result):
+        if result['state']:
+            self.window_flags_object.enable_flag(Qt.FramelessWindowHint)
+        else:
+            self.window_flags_object.remove_flag(Qt.FramelessWindowHint)
+        self.wg_my_app.pb_loaded_word.setTextVisible(not result['state'])
+        self.setWindowFlags(self.window_flags_object.get_flags())
+        self.show()
+
+    def enterEvent(self, event):
+        self.menu_bar.show()
+        return super(MainWindow, self).enterEvent(event)
+
+    def leaveEvent(self, event):
+        self.menu_bar.hide()
+        return super(MainWindow, self).leaveEvent(event)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.offset = event.pos()
+        else:
+            super(MainWindow).mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if self.offset is not None and event.buttons() == Qt.LeftButton:
+            self.move(self.pos() + event.pos() - self.offset)
+        else:
+            super(MainWindow).mouseMoveEvent(event)
+
     def close_app(self):
         self.wg_my_app.my_repeat_timer and self.wg_my_app.my_repeat_timer.stop()
         logging.info('Closed app ╮（╯＿╰）╭')
@@ -172,7 +229,6 @@ class MyApp(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent, Qt.WindowFlags())
-
         self.delay = 3
         self.current_file = 'Unknown'
 
@@ -182,20 +238,20 @@ class MyApp(QWidget):
         # ------------------------------------------------------------
         self.lbl_print_word = QLabel()
         self.lbl_print_word.setText(DEFAULT_STR)
-        self.lbl_print_word.setFont(QFont('Arial', 24, QFont.Bold))
+        self.lbl_print_word.setFont(QFont('Arial', 10, QFont.Bold))
         self.lbl_print_word.setAlignment(Qt.AlignCenter)
 
         self.pb_loaded_word = QProgressBar(self)
         self.pb_loaded_word.setValue(0)
         self.pb_loaded_word.setMaximum(100)
+        self.pb_loaded_word.setStyleSheet(StyleSheetProgressBar)
 
         # ------------------------------------------------------------
         layout = QGridLayout(self)
-        param = [self.lbl_print_word, 0, 0, 1, 2]
+        param = [self.lbl_print_word, 0, 0, 1, 4]
         layout.addWidget(*param)
-        param = [self.pb_loaded_word, 1, 0, 1, 2]
+        param = [self.pb_loaded_word, 1, 0, 1, 4]
         layout.addWidget(*param)
-
         # ------------------------------------------------------------
         self.setLayout(layout)
         self.setWindowTitle('Words')
