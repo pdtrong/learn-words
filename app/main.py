@@ -18,26 +18,29 @@ else:
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent, Qt.WindowFlags())
-        # ------------------------------------------------------------
-        self.wg_my_app = MyWidget(parent=self)
 
+        self.is_hide_menu_bar = False
+
+        # ------------------------------------------------------------
         height, width = 60, 250
         center_point = QDesktopWidget().availableGeometry().center()
-
         self.setGeometry(int(center_point.x() - width / 2), int(center_point.y() - height / 2), width, height)
-        self.setCentralWidget(self.wg_my_app)
         self.setWindowTitle('Learn words')
+
+        # ------------------------------------------------------------
+        self.wg_my_app = MyWidget(parent=self)
+        self.setCentralWidget(self.wg_my_app)
 
         # ------------------------------------------------------------
         self.menu_bar = MyMenuBar(self)
         self.setMenuWidget(self.menu_bar)
 
     def enterEvent(self, event):
-        self.menu_bar.setVisible(True)
+        self.is_hide_menu_bar and self.menu_bar.setVisible(True)
         return super(MainWindow, self).enterEvent(event)
 
     def leaveEvent(self, event):
-        self.menu_bar.setVisible(False)
+        self.is_hide_menu_bar and self.menu_bar.setVisible(False)
         return super(MainWindow, self).leaveEvent(event)
 
     def mousePressEvent(self, event):

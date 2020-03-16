@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-from common.constant import ChoiceMode
+from common.constant import ChoiceMode, HideMode
 from util.windows_flags_object import WindowFlagsObject
 
 
@@ -74,11 +74,25 @@ class MyMenuBar(QMenuBar):
         mb_view = self.addMenu('View')
         qa_current_section = QAction('Current section', self)
         qa_current_section.triggered.connect(lambda ign: self.trigger_view_current_section.emit({}))
-        qa_hide = QAction('Hide', self, checkable=True)
-        qa_hide.setChecked(False)
-        qa_hide.triggered.connect(lambda state: self.trigger_view_hide.emit({'state': state}))
+
+        mn_hide = QMenu('Hide', self)
+
+        qa_hide_title_name = HideMode.TITLE_BAR
+        qa_hide_title = QAction(qa_hide_title_name, self, checkable=True)
+        qa_hide_title.setChecked(False)
+        qa_hide_title.triggered.connect(lambda state: self.trigger_view_hide.emit({'name': qa_hide_title_name,
+                                                                                   'state': state}))
+        mn_hide.addAction(qa_hide_title)
+
+        qa_hide_menu_name = HideMode.MENU_BAR
+        qa_hide_menu = QAction(qa_hide_menu_name, self, checkable=True)
+        qa_hide_menu.setChecked(False)
+        qa_hide_menu.triggered.connect(lambda state: self.trigger_view_hide.emit({'name': qa_hide_menu_name,
+                                                                                  'state': state}))
+        mn_hide.addAction(qa_hide_menu)
+
         mb_view.addAction(qa_current_section)
-        mb_view.addAction(qa_hide)
+        mb_view.addMenu(mn_hide)
 
         # ------------------------------------------------------------
         # Window
@@ -144,10 +158,16 @@ class MyMenuBar(QMenuBar):
 
     @pyqtSlot(dict)
     def view_hide_event(self, result):
-        if result['state']:
-            self.window_flags_object.enable_flag(Qt.FramelessWindowHint)
+        if result['name'] == HideMode.TITLE_BAR:
+            if result['state']:
+                self.window_flags_object.enable_flag(Qt.FramelessWindowHint)
+            else:
+                self.window_flags_object.remove_flag(Qt.FramelessWindowHint)
+            self.parent.wg_my_app.pb_loaded_word.setTextVisible(not result['state'])
+            self.parent.setWindowFlags(self.window_flags_object.get_flags())
+            self.parent.show()
+        elif result['name'] == HideMode.MENU_BAR:
+            self.parent.is_hide_menu_bar = result['state']
+            self.setVisible(not result['state'])
         else:
-            self.window_flags_object.remove_flag(Qt.FramelessWindowHint)
-        self.parent.wg_my_app.pb_loaded_word.setTextVisible(not result['state'])
-        self.parent.setWindowFlags(self.window_flags_object.get_flags())
-        self.parent.show()
+            pass
