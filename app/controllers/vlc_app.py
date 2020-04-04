@@ -2,7 +2,7 @@ import vlc
 import time
 
 
-def play_sound_of_word(file_path):
-    p = vlc.MediaPlayer(file_path)
-    p.play()
-    time.sleep(1)
+def play_sound_of_word(file_path, delay=1):
+    vlc_app = vlc.MediaPlayer(file_path)
+    vlc_app.play()
+    time.sleep(delay)
