@@ -20,6 +20,7 @@ class MainWindow(QMainWindow):
         super().__init__(parent, Qt.WindowFlags())
 
         self.is_hide_menu_bar = False
+        self.path_root = get_root_folder()
 
         # ------------------------------------------------------------
         height, width = 60, 250
