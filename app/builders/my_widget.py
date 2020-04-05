@@ -5,6 +5,10 @@ from util.repeat_timer import RepeatedTimer
 from controllers.word_handle import MyWord
 from common.constant import DEFAULT_STR
 from common.stylesheet import StyleSheetProgressBar
+from workers.worker import Worker
+from api.google_translate import get_sound_of_word
+from controllers.vlc_app import media_player
+
 import os
 
 
@@ -14,8 +18,10 @@ class MyWidget(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent, Qt.WindowFlags())
+        self.parent = parent
         self.delay = 3
         self.current_file = 'Unknown'
+        self.thread_pool = QThreadPool()
 
         # ------------------------------------------------------------
         self.trigger_update_word.connect(self.update_printing_word)
@@ -77,3 +83,14 @@ class MyWidget(QWidget):
         else:
             self.lbl_print_word.setText(word)
             self.pb_loaded_word.setValue(self.my_word.get_number_loaded())
+
+            # play sound of word
+            worker = Worker(self.play_sound_of_word, word.split(' ')[0])
+            self.thread_pool.start(worker)
+
+    # ------------------------------------------------------------
+    def play_sound_of_word(self, word):
+        file_path = get_sound_of_word(self.parent.path_root, word)
+        if not file_path:
+            return None
+        media_player(file_path)
