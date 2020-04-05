@@ -13,3 +13,5 @@ log/
 VLC/
 dist/
 build/
+app/temporary/
+VLC.zip
