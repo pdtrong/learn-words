@@ -93,4 +93,4 @@ class MyWidget(QWidget):
         file_path = get_sound_of_word(self.parent.path_root, word)
         if not file_path:
             return None
-        media_player(file_path)
+        media_player(file_path, self.delay)
