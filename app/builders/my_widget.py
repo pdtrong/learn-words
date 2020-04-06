@@ -29,7 +29,7 @@ class MyWidget(QWidget):
         # ------------------------------------------------------------
         self.lbl_print_word = QLabel()
         self.lbl_print_word.setText(DEFAULT_STR)
-        self.lbl_print_word.setFont(QFont('Arial', 10, QFont.Bold))
+        self.lbl_print_word.setFont(QFont('Arial', 20, QFont.Bold))
         self.lbl_print_word.setAlignment(Qt.AlignCenter)
 
         self.pb_loaded_word = QProgressBar(self)

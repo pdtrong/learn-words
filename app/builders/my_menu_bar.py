@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from common.constant import ChoiceMode, HideMode
 from util.windows_flags_object import WindowFlagsObject
@@ -8,6 +9,7 @@ class MyMenuBar(QMenuBar):
     trigger_window_stay_on_top = pyqtSignal(dict)
     trigger_file_import_words = pyqtSignal(dict)
     trigger_help_about = pyqtSignal(dict)
+    trigger_edit_size_text = pyqtSignal(dict)
     trigger_edit_adjust_timer = pyqtSignal(dict)
     trigger_choice_random = pyqtSignal(dict)
     trigger_choice_order = pyqtSignal(dict)
@@ -24,6 +26,7 @@ class MyMenuBar(QMenuBar):
         self.trigger_window_stay_on_top.connect(self.stay_op_top_event)
         self.trigger_file_import_words.connect(self.parent.wg_my_app.import_words_event)
         self.trigger_help_about.connect(self.about_event)
+        self.trigger_edit_size_text.connect(self.change_size_text)
         self.trigger_edit_adjust_timer.connect(self.adjust_timer_event)
         self.trigger_choice_random.connect(self.choice_word_event)
         self.trigger_choice_order.connect(self.choice_word_event)
@@ -42,6 +45,10 @@ class MyMenuBar(QMenuBar):
         # ------------------------------------------------------------
         # Edit
         mb_edit = self.addMenu('Edit')
+
+        # # Adjust timer
+        qa_change_size_text = QAction('Change size text', self)
+        qa_change_size_text.triggered.connect(lambda ign: self.trigger_edit_size_text.emit({}))
 
         # # Adjust timer
         qa_setup_timer = QAction('Adjust timer', self)
@@ -66,6 +73,7 @@ class MyMenuBar(QMenuBar):
         mn_choice_word.addAction(qa_choice_order)
         self.submenu_choice[qa_choice_order_name] = qa_choice_order
 
+        mb_edit.addAction(qa_change_size_text)
         mb_edit.addAction(qa_setup_timer)
         mb_edit.addMenu(mn_choice_word)
 
@@ -130,6 +138,14 @@ class MyMenuBar(QMenuBar):
         if done and timer_value:
             self.parent.wg_my_app.delay = int(timer_value)
             self.parent.wg_my_app.my_word.get_len_words() and self.parent.wg_my_app.start_timer()
+
+    @pyqtSlot(dict)
+    def change_size_text(self):
+        parameter = [self.parent, 'Input Dialog', 'Enter size text :',
+                     10, 1, 100, 1, Qt.WindowFlags()]
+        size_value, done = QInputDialog.getInt(*parameter)
+        if done and size_value:
+            self.parent.wg_my_app.lbl_print_word.setFont(QFont('Arial', int(size_value), QFont.Bold))
 
     @pyqtSlot(dict)
     def about_event(self):
