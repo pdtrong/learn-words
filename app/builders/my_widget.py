@@ -3,12 +3,12 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from util.repeat_timer import RepeatedTimer
 from controllers.word_handle import MyWord
-from common.constant import DEFAULT_STR
+from common.constant import DEFAULT_STR, DEFAULT_STR_2
 from common.stylesheet import StyleSheetProgressBar
 from workers.worker import Worker
 from api.google_translate import get_sound_of_word
 from controllers.vlc_app import media_player
-
+import eng_to_ipa as ipa
 import os
 
 
@@ -32,6 +32,11 @@ class MyWidget(QWidget):
         self.lbl_print_word.setFont(QFont('Arial', 20, QFont.Bold))
         self.lbl_print_word.setAlignment(Qt.AlignCenter)
 
+        self.lbl_print_ipa = QLabel()
+        self.lbl_print_ipa.setText(DEFAULT_STR_2)
+        self.lbl_print_ipa.setFont(QFont('Arial', 10, QFont.Bold))
+        self.lbl_print_ipa.setAlignment(Qt.AlignCenter)
+
         self.pb_loaded_word = QProgressBar(self)
         self.pb_loaded_word.setValue(0)
         self.pb_loaded_word.setMaximum(100)
@@ -39,9 +44,11 @@ class MyWidget(QWidget):
 
         # ------------------------------------------------------------
         layout = QGridLayout(self)
-        param = [self.lbl_print_word, 0, 0, 1, 4]
+        param = [self.lbl_print_ipa, 0, 0, 1, 4]
         layout.addWidget(*param)
-        param = [self.pb_loaded_word, 1, 0, 1, 4]
+        param = [self.lbl_print_word, 1, 0, 1, 4]
+        layout.addWidget(*param)
+        param = [self.pb_loaded_word, 2, 0, 1, 4]
         layout.addWidget(*param)
         # ------------------------------------------------------------
         self.setLayout(layout)
@@ -80,8 +87,10 @@ class MyWidget(QWidget):
         word = self.my_word.get_word()
         if not word:
             self.lbl_print_word.setText(DEFAULT_STR)
+            self.lbl_print_ipa.setText(DEFAULT_STR_2)
         else:
             self.lbl_print_word.setText(word)
+            self.lbl_print_ipa.setText(ipa.convert(word))
             self.pb_loaded_word.setValue(self.my_word.get_number_loaded())
 
             # play sound of word

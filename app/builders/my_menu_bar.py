@@ -99,6 +99,13 @@ class MyMenuBar(QMenuBar):
                                                                                   'state': state}))
         mn_hide.addAction(qa_hide_menu)
 
+        qa_hide_ipa_name = HideMode.IPA_WORD
+        qa_hide_ipa = QAction(qa_hide_ipa_name, self, checkable=True)
+        qa_hide_ipa.setChecked(False)
+        qa_hide_ipa.triggered.connect(lambda state: self.trigger_view_hide.emit({'name': qa_hide_ipa_name,
+                                                                                 'state': state}))
+        mn_hide.addAction(qa_hide_ipa)
+
         mb_view.addAction(qa_current_section)
         mb_view.addMenu(mn_hide)
 
@@ -142,10 +149,11 @@ class MyMenuBar(QMenuBar):
     @pyqtSlot(dict)
     def change_size_text(self):
         parameter = [self.parent, 'Input Dialog', 'Enter size text :',
-                     10, 1, 100, 1, Qt.WindowFlags()]
+                     20, 1, 100, 1, Qt.WindowFlags()]
         size_value, done = QInputDialog.getInt(*parameter)
         if done and size_value:
             self.parent.wg_my_app.lbl_print_word.setFont(QFont('Arial', int(size_value), QFont.Bold))
+            self.parent.wg_my_app.lbl_print_ipa.setFont(QFont('Arial', int(size_value / 2), QFont.Bold))
 
     @pyqtSlot(dict)
     def about_event(self):
@@ -185,5 +193,7 @@ class MyMenuBar(QMenuBar):
         elif result['name'] == HideMode.MENU_BAR:
             self.parent.is_hide_menu_bar = result['state']
             self.setVisible(not result['state'])
+        elif result['name'] == HideMode.IPA_WORD:
+            self.parent.wg_my_app.lbl_print_ipa.setVisible(not result['state'])
         else:
             pass
