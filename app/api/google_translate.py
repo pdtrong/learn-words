@@ -1,4 +1,4 @@
-from app.common.constant import TRANSLATE_URL
+from common.constant import TRANSLATE_URL
 import requests
 import os
 
