@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
+from PyQt5.QtWidgets import QAction, QMenu, QInputDialog, QMessageBox, QMenuBar
+from PyQt5.QtGui import QFont
+from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt
 from common.constant import ChoiceMode, HideMode
 from util.windows_flags_object import WindowFlagsObject
 

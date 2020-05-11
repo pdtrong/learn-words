@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
+from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QApplication
+from PyQt5.QtGui import QPalette, QIcon, QColor
+from PyQt5.QtCore import Qt
 from util.logging_custom import logging
 from builders.my_widget import MyWidget
 from builders.my_menu_bar import MyMenuBar
@@ -8,7 +8,6 @@ from util.util import remove_mp3_files
 import os
 import sys
 import ctypes
-import glob
 
 
 if hasattr(sys, '_MEIPASS'):

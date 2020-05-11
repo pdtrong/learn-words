@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
+from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QProgressBar, QFileDialog
+from PyQt5.QtGui import QFont
+from PyQt5.QtCore import QThreadPool, Qt, pyqtSignal, pyqtSlot
 from util.repeat_timer import RepeatedTimer
 from controllers.word_handle import MyWord
 from common.constant import DEFAULT_STR, DEFAULT_STR_2
