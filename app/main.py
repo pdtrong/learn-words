@@ -4,9 +4,11 @@ from PyQt5.QtCore import *
 from util.logging_custom import logging
 from builders.my_widget import MyWidget
 from builders.my_menu_bar import MyMenuBar
+from util.util import remove_mp3_files
 import os
 import sys
 import ctypes
+import glob
 
 
 if hasattr(sys, '_MEIPASS'):
@@ -58,6 +60,7 @@ class MainWindow(QMainWindow):
 
     def close_app(self):
         self.wg_my_app.my_repeat_timer and self.wg_my_app.my_repeat_timer.stop()
+        remove_mp3_files(self.path_root)
         logging.info('Closed app ╮（╯＿╰）╭')
 
 

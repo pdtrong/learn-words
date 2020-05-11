@@ -6,7 +6,6 @@ from controllers.word_handle import MyWord
 from common.constant import DEFAULT_STR, DEFAULT_STR_2
 from common.stylesheet import StyleSheetProgressBar
 from workers.worker import Worker
-from api.google_translate import get_sound_of_word
 from controllers.vlc_app import media_player
 import eng_to_ipa as ipa
 import os
@@ -55,7 +54,7 @@ class MyWidget(QWidget):
         self.setWindowTitle('Words')
 
         # ------------------------------------------------------------
-        self.my_word = MyWord()
+        self.my_word = MyWord(self.parent)
         self.my_repeat_timer = None
 
     # ------------------------------------------------------------
@@ -84,7 +83,8 @@ class MyWidget(QWidget):
     # ------------------------------------------------------------
     @pyqtSlot(dict)
     def update_printing_word(self):
-        word = self.my_word.get_word()
+        data = self.my_word.get_word()
+        word = data['word']
         if not word:
             self.lbl_print_word.setText(DEFAULT_STR)
             self.lbl_print_ipa.setText(DEFAULT_STR_2)
@@ -94,12 +94,11 @@ class MyWidget(QWidget):
             self.pb_loaded_word.setValue(self.my_word.get_number_loaded())
 
             # play sound of word
-            worker = Worker(self.play_sound_of_word, word.split(' ')[0])
+            worker = Worker(self.play_sound_of_word, data['file_sound_path'])
             self.thread_pool.start(worker)
 
     # ------------------------------------------------------------
-    def play_sound_of_word(self, word):
-        file_path = get_sound_of_word(self.parent.path_root, word)
+    def play_sound_of_word(self, file_path):
         if not file_path:
             return None
         media_player(file_path, self.delay)
